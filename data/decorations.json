@@ -1,0 +1,20 @@
+{
+  "decorations": [
+    {
+      "id": "attack_jewel_1",
+      "name": "攻擊珠【1】",
+      "slot_size": 1,
+      "skill": "attack_boost",
+      "skill_level": 1,
+      "rarity": 5
+    },
+    {
+      "id": "critical_jewel_2",
+      "name": "痛擊珠【2】",
+      "slot_size": 2,
+      "skill": "weakness_exploit",
+      "skill_level": 1,
+      "rarity": 6
+    }
+  ]
+}
