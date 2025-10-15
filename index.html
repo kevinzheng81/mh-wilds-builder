@@ -16,52 +16,18 @@
         .skill-card:hover {
             transform: translateY(-2px);
         }
+        /* 確保在 Tailwind 載入前也有基本樣式 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
     </style>
 </head>
 <body class="text-white p-4 md:p-6">
-    <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl md:text-4xl font-bold mb-2 text-center bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-            魔物獵人荒野配裝器
-        </h1>
-        <p class="text-center text-slate-400 mb-8">選擇想要的技能，系統會自動推薦最佳配裝組合</p>
-
-        <div class="grid lg:grid-cols-2 gap-6">
-            <!-- 左側：技能選擇 -->
-            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-orange-400">①</span> 選擇技能
-                </h2>
-                
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="搜尋技能..."
-                    class="w-full px-4 py-2 mb-4 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-400 text-white"
-                />
-
-                <!-- 已選技能 -->
-                <div id="selectedSkills" class="mb-4 hidden p-4 bg-slate-900/50 rounded-lg border border-orange-500/30">
-                    <div class="text-sm text-slate-400 mb-2">已選技能：</div>
-                    <div id="selectedSkillsList" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <!-- 技能列表 -->
-                <div id="skillsList" class="space-y-2 max-h-96 overflow-y-auto"></div>
-            </div>
-
-            <!-- 右側：配裝結果 -->
-            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-orange-400">②</span> 推薦配裝
-                </h2>
-                <div id="resultsArea"></div>
-            </div>
-        </div>
-
-        <div class="mt-6 text-center text-sm text-slate-500">
-            <p>示範版本 - 使用部分資料 | 實際遊戲請參考官方資料</p>
-        </div>
-    </div>
+    <div id="app" class="loading">載入中...</div>
 
     <script>
         // 遊戲資料
@@ -75,7 +41,9 @@
             { id: 'evade_extender', name: '迴避距離', maxLevel: 3, description: '增加迴避距離' },
             { id: 'speed_eating', name: '快吃', maxLevel: 3, description: '加快道具使用速度' },
             { id: 'constitution', name: '體術', maxLevel: 3, description: '減少持續消耗的耐力' },
-            { id: 'speed_sharpening', name: '砥石使用高速化', maxLevel: 3, description: '加快磨刀速度' }
+            { id: 'speed_sharpening', name: '砥石使用高速化', maxLevel: 3, description: '加快磨刀速度' },
+            { id: 'stun_resistance', name: '耐暈', maxLevel: 3, description: '減少暈眩時間' },
+            { id: 'health_boost', name: '體力增強', maxLevel: 3, description: '提升最大體力' }
         ];
 
         const ARMOR_DATA = {
@@ -83,31 +51,36 @@
                 { id: 'rathalos_helm', name: '火龍頭盔', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2, 1] },
                 { id: 'doshaguma_helm', name: '土砂龍頭盔', defense: 76, skills: { constitution: 2, evade_extender: 1 }, slots: [1, 1] },
                 { id: 'rey_dau_helm', name: '雷狼龍頭盔', defense: 84, skills: { critical_eye: 2, speed_eating: 1 }, slots: [2] },
-                { id: 'chatacabra_helm', name: '恰恰布拉頭盔', defense: 72, skills: { divine_blessing: 2 }, slots: [1, 1, 1] }
+                { id: 'chatacabra_helm', name: '恰恰布拉頭盔', defense: 72, skills: { divine_blessing: 2 }, slots: [1, 1, 1] },
+                { id: 'balahara_helm', name: '巴拉哈拉頭盔', defense: 78, skills: { health_boost: 2, stun_resistance: 1 }, slots: [2, 1] }
             ],
             chest: [
                 { id: 'rathalos_mail', name: '火龍鎧甲', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2] },
                 { id: 'doshaguma_mail', name: '土砂龍鎧甲', defense: 76, skills: { constitution: 2, agitator: 1 }, slots: [1, 1] },
                 { id: 'rey_dau_mail', name: '雷狼龍鎧甲', defense: 84, skills: { critical_eye: 3 }, slots: [2, 1] },
-                { id: 'chatacabra_mail', name: '恰恰布拉鎧甲', defense: 72, skills: { divine_blessing: 1, evade_window: 2 }, slots: [1] }
+                { id: 'chatacabra_mail', name: '恰恰布拉鎧甲', defense: 72, skills: { divine_blessing: 1, evade_window: 2 }, slots: [1] },
+                { id: 'balahara_mail', name: '巴拉哈拉鎧甲', defense: 78, skills: { health_boost: 1, stun_resistance: 2 }, slots: [2] }
             ],
             arms: [
                 { id: 'rathalos_braces', name: '火龍護腕', defense: 82, skills: { attack_boost: 2 }, slots: [2, 1, 1] },
                 { id: 'doshaguma_braces', name: '土砂龍護腕', defense: 76, skills: { constitution: 1, speed_sharpening: 2 }, slots: [1] },
                 { id: 'rey_dau_braces', name: '雷狼龍護腕', defense: 84, skills: { critical_eye: 2, agitator: 1 }, slots: [2] },
-                { id: 'chatacabra_braces', name: '恰恰布拉護腕', defense: 72, skills: { divine_blessing: 2, speed_eating: 1 }, slots: [1, 1] }
+                { id: 'chatacabra_braces', name: '恰恰布拉護腕', defense: 72, skills: { divine_blessing: 2, speed_eating: 1 }, slots: [1, 1] },
+                { id: 'balahara_braces', name: '巴拉哈拉護腕', defense: 78, skills: { health_boost: 2 }, slots: [2, 2] }
             ],
             waist: [
                 { id: 'rathalos_coil', name: '火龍腰帶', defense: 82, skills: { weakness_exploit: 2, attack_boost: 1 }, slots: [1, 1] },
                 { id: 'doshaguma_coil', name: '土砂龍腰帶', defense: 76, skills: { constitution: 1, evade_extender: 2 }, slots: [2] },
                 { id: 'rey_dau_coil', name: '雷狼龍腰帶', defense: 84, skills: { critical_eye: 2 }, slots: [2, 2] },
-                { id: 'chatacabra_coil', name: '恰恰布拉腰帶', defense: 72, skills: { divine_blessing: 1, evade_window: 1 }, slots: [1, 1, 1] }
+                { id: 'chatacabra_coil', name: '恰恰布拉腰帶', defense: 72, skills: { divine_blessing: 1, evade_window: 1 }, slots: [1, 1, 1] },
+                { id: 'balahara_coil', name: '巴拉哈拉腰帶', defense: 78, skills: { health_boost: 1, stun_resistance: 1 }, slots: [2, 1] }
             ],
             legs: [
                 { id: 'rathalos_greaves', name: '火龍護腿', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [1] },
                 { id: 'doshaguma_greaves', name: '土砂龍護腿', defense: 76, skills: { constitution: 2, speed_sharpening: 1 }, slots: [1, 1] },
                 { id: 'rey_dau_greaves', name: '雷狼龍護腿', defense: 84, skills: { critical_eye: 2, agitator: 2 }, slots: [2] },
-                { id: 'chatacabra_greaves', name: '恰恰布拉護腿', defense: 72, skills: { divine_blessing: 2, evade_window: 1 }, slots: [2, 1] }
+                { id: 'chatacabra_greaves', name: '恰恰布拉護腿', defense: 72, skills: { divine_blessing: 2, evade_window: 1 }, slots: [2, 1] },
+                { id: 'balahara_greaves', name: '巴拉哈拉護腿', defense: 78, skills: { health_boost: 2, stun_resistance: 1 }, slots: [1, 1] }
             ]
         };
 
@@ -115,21 +88,71 @@
         let selectedSkills = {};
         let searchTerm = '';
 
-        // 初始化
-        function init() {
-            renderSkills();
+        // 初始化整個應用程式
+        function initApp() {
+            const appContainer = document.getElementById('app');
+            appContainer.innerHTML = `
+                <div class="max-w-7xl mx-auto">
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2 text-center bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                        魔物獵人荒野配裝器
+                    </h1>
+                    <p class="text-center text-slate-400 mb-8">選擇想要的技能，系統會自動推薦最佳配裝組合</p>
+
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <!-- 左側：技能選擇 -->
+                        <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+                            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <span class="text-orange-400">①</span> 選擇技能
+                            </h2>
+                            
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="搜尋技能..."
+                                class="w-full px-4 py-2 mb-4 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-400 text-white"
+                            />
+
+                            <!-- 已選技能 -->
+                            <div id="selectedSkills" class="mb-4 hidden p-4 bg-slate-900/50 rounded-lg border border-orange-500/30">
+                                <div class="text-sm text-slate-400 mb-2">已選技能：</div>
+                                <div id="selectedSkillsList" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <!-- 技能列表 -->
+                            <div id="skillsList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                        </div>
+
+                        <!-- 右側：配裝結果 -->
+                        <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+                            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <span class="text-orange-400">②</span> 推薦配裝
+                            </h2>
+                            <div id="resultsArea"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center text-sm text-slate-500">
+                        <p>示範版本 - 使用部分資料 | 實際遊戲請參考官方資料</p>
+                    </div>
+                </div>
+            `;
+
+            // 綁定事件
             document.getElementById('searchInput').addEventListener('input', (e) => {
-                searchTerm = e.target.value;
+                searchTerm = e.target.value.toLowerCase();
                 renderSkills();
             });
+
+            // 初始渲染
+            renderSkills();
             showInitialMessage();
         }
 
         // 渲染技能列表
         function renderSkills() {
             const filteredSkills = SKILLS.filter(skill =>
-                skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+                skill.name.toLowerCase().includes(searchTerm) ||
+                skill.description.toLowerCase().includes(searchTerm)
             );
 
             const skillsList = document.getElementById('skillsList');
@@ -146,8 +169,8 @@
                                     onclick="toggleSkill('${skill.id}', ${level})"
                                     class="px-3 py-1 rounded transition ${
                                         isSelected
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-slate-700 hover:bg-slate-600'
+                                            ? 'bg-orange-500 text-white font-bold'
+                                            : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                                     }"
                                 >
                                     Lv${level}
@@ -175,9 +198,9 @@
             list.innerHTML = Object.entries(selectedSkills).map(([skillId, level]) => {
                 const skill = SKILLS.find(s => s.id === skillId);
                 return `
-                    <div class="flex items-center gap-2 bg-orange-500/20 px-3 py-1 rounded-full">
-                        <span class="text-sm">${skill.name} Lv${level}</span>
-                        <button onclick="removeSkill('${skillId}')" class="hover:text-red-400 text-lg leading-none">×</button>
+                    <div class="flex items-center gap-2 bg-orange-500/20 px-3 py-1 rounded-full text-orange-200">
+                        <span class="text-sm font-medium">${skill.name} Lv${level}</span>
+                        <button onclick="removeSkill('${skillId}')" class="hover:text-red-400 text-lg leading-none font-bold">×</button>
                     </div>
                 `;
             }).join('');
@@ -191,7 +214,11 @@
                 selectedSkills[skillId] = level;
             }
             renderSkills();
-            showCalculateButton();
+            if (Object.keys(selectedSkills).length > 0) {
+                showCalculateButton();
+            } else {
+                showInitialMessage();
+            }
         }
 
         // 移除技能
@@ -221,10 +248,11 @@
                 <div class="text-center py-20">
                     <button
                         onclick="calculateBuilds()"
-                        class="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg font-bold hover:from-orange-600 hover:to-red-600 transition shadow-lg"
+                        class="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg font-bold hover:from-orange-600 hover:to-red-600 transition shadow-lg transform hover:scale-105"
                     >
                         開始計算配裝
                     </button>
+                    <p class="text-sm text-slate-400 mt-4">已選擇 ${Object.keys(selectedSkills).length} 個技能</p>
                 </div>
             `;
         }
@@ -232,12 +260,12 @@
         // 計算配裝
         function calculateBuilds() {
             const results = document.getElementById('resultsArea');
-            results.innerHTML = '<div class="text-center py-20 text-slate-400">計算中...</div>';
+            results.innerHTML = '<div class="text-center py-20 text-slate-400 animate-pulse">計算中...</div>';
 
             setTimeout(() => {
                 const builds = generateBuilds();
                 renderBuilds(builds);
-            }, 100);
+            }, 300);
         }
 
         // 生成配裝
@@ -304,52 +332,68 @@
             }
 
             results.innerHTML = `
-                <div class="space-y-4 max-h-[600px] overflow-y-auto">
+                <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                     ${builds.map((build, idx) => `
-                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-600">
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-600 hover:border-slate-500 transition">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="font-bold text-lg">配裝方案 #${idx + 1}</span>
                                 <div class="flex gap-2">
-                                    <span class="text-sm bg-blue-500/20 px-3 py-1 rounded-full">
+                                    <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
                                         防禦: ${build.defense}
                                     </span>
-                                    <span class="text-sm bg-orange-500/20 px-3 py-1 rounded-full">
+                                    <span class="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">
                                         評分: ${build.score}
                                     </span>
                                 </div>
                             </div>
                             
-                            <div class="space-y-2 mb-3">
-                                ${['head', 'chest', 'arms', 'waist', 'legs'].map(part => `
-                                    <div class="text-sm flex items-center gap-2">
-                                        <span class="text-slate-400 w-16">
-                                            ${part === 'head' ? '頭部' : part === 'chest' ? '胸部' : part === 'arms' ? '手部' : part === 'waist' ? '腰部' : '腳部'}:
-                                        </span>
-                                        <span class="font-medium">${build[part].name}</span>
-                                    </div>
-                                `).join('')}
+                            <div class="space-y-1.5 mb-3 text-sm">
+                                ${['head', 'chest', 'arms', 'waist', 'legs'].map(part => {
+                                    const partNames = {
+                                        head: '頭部',
+                                        chest: '胸部',
+                                        arms: '手部',
+                                        waist: '腰部',
+                                        legs: '腳部'
+                                    };
+                                    return `
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-slate-400 w-12">${partNames[part]}:</span>
+                                            <span class="font-medium text-slate-200">${build[part].name}</span>
+                                            <span class="text-xs text-slate-500">(防${build[part].defense})</span>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
 
                             <div class="border-t border-slate-700 pt-3">
-                                <div class="text-sm text-slate-400 mb-2">總技能:</div>
-                                <div class="flex flex-wrap gap-2">
-                                    ${Object.entries(build.skills).map(([skillId, level]) => {
-                                        const skill = SKILLS.find(s => s.id === skillId);
-                                        const isRequired = selectedSkills[skillId];
-                                        const isFulfilled = isRequired && level >= selectedSkills[skillId];
-                                        return `
-                                            <div class="text-xs px-2 py-1 rounded ${
-                                                isFulfilled
-                                                    ? 'bg-green-500/20 text-green-300'
-                                                    : isRequired
-                                                    ? 'bg-yellow-500/20 text-yellow-300'
-                                                    : 'bg-slate-700 text-slate-300'
-                                            }">
-                                                ${skill?.name || skillId} Lv${level}
-                                                ${isFulfilled ? ' ✓' : ''}
-                                            </div>
-                                        `;
-                                    }).join('')}
+                                <div class="text-xs text-slate-400 mb-2">總技能:</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${Object.entries(build.skills)
+                                        .sort((a, b) => {
+                                            const aRequired = selectedSkills[a[0]];
+                                            const bRequired = selectedSkills[b[0]];
+                                            if (aRequired && !bRequired) return -1;
+                                            if (!aRequired && bRequired) return 1;
+                                            return 0;
+                                        })
+                                        .map(([skillId, level]) => {
+                                            const skill = SKILLS.find(s => s.id === skillId);
+                                            const isRequired = selectedSkills[skillId];
+                                            const isFulfilled = isRequired && level >= selectedSkills[skillId];
+                                            return `
+                                                <div class="text-xs px-2 py-1 rounded ${
+                                                    isFulfilled
+                                                        ? 'bg-green-500/20 text-green-300 font-medium'
+                                                        : isRequired
+                                                        ? 'bg-yellow-500/20 text-yellow-300'
+                                                        : 'bg-slate-700 text-slate-300'
+                                                }">
+                                                    ${skill?.name || skillId} Lv${level}
+                                                    ${isFulfilled ? ' ✓' : ''}
+                                                </div>
+                                            `;
+                                        }).join('')}
                                 </div>
                             </div>
                         </div>
@@ -358,8 +402,12 @@
             `;
         }
 
-        // 啟動
-        init();
+        // 當頁面載入完成後啟動應用程式
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 </html>
