@@ -1,0 +1,295 @@
+import React, { useState, useMemo } from 'react';
+import { Search, X, Check } from 'lucide-react';
+
+// 技能資料庫（示範用部分資料）
+const SKILLS = [
+  { id: 'weakness_exploit', name: '弱點特效', maxLevel: 5, description: '攻擊弱點時提升會心率' },
+  { id: 'attack_boost', name: '攻擊', maxLevel: 7, description: '提升攻擊力' },
+  { id: 'critical_eye', name: '看破', maxLevel: 7, description: '提升會心率' },
+  { id: 'agitator', name: '挑戰者', maxLevel: 5, description: '怪物憤怒時提升攻擊和會心' },
+  { id: 'divine_blessing', name: '精靈加護', maxLevel: 5, description: '機率減少受到的傷害' },
+  { id: 'evade_window', name: '迴避性能', maxLevel: 5, description: '延長迴避無敵時間' },
+  { id: 'evade_extender', name: '迴避距離', maxLevel: 3, description: '增加迴避距離' },
+  { id: 'speed_eating', name: '快吃', maxLevel: 3, description: '加快道具使用速度' },
+  { id: 'constitution', name: '體術', maxLevel: 3, description: '減少持續消耗的耐力' },
+  { id: 'speed_sharpening', name: '砥石使用高速化', maxLevel: 3, description: '加快磨刀速度' }
+];
+
+// 防具資料庫（示範用）
+const ARMOR_DATA = {
+  head: [
+    { id: 'rathalos_helm', name: '火龍頭盔', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2, 1] },
+    { id: 'doshaguma_helm', name: '土砂龍頭盔', defense: 76, skills: { constitution: 2, evade_extender: 1 }, slots: [1, 1] },
+    { id: 'rey_dau_helm', name: '雷狼龍頭盔', defense: 84, skills: { critical_eye: 2, speed_eating: 1 }, slots: [2] },
+    { id: 'chatacabra_helm', name: '恰恰布拉頭盔', defense: 72, skills: { divine_blessing: 2 }, slots: [1, 1, 1] }
+  ],
+  chest: [
+    { id: 'rathalos_mail', name: '火龍鎧甲', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2] },
+    { id: 'doshaguma_mail', name: '土砂龍鎧甲', defense: 76, skills: { constitution: 2, agitator: 1 }, slots: [1, 1] },
+    { id: 'rey_dau_mail', name: '雷狼龍鎧甲', defense: 84, skills: { critical_eye: 3 }, slots: [2, 1] },
+    { id: 'chatacabra_mail', name: '恰恰布拉鎧甲', defense: 72, skills: { divine_blessing: 1, evade_window: 2 }, slots: [1] }
+  ],
+  arms: [
+    { id: 'rathalos_braces', name: '火龍護腕', defense: 82, skills: { attack_boost: 2 }, slots: [2, 1, 1] },
+    { id: 'doshaguma_braces', name: '土砂龍護腕', defense: 76, skills: { constitution: 1, speed_sharpening: 2 }, slots: [1] },
+    { id: 'rey_dau_braces', name: '雷狼龍護腕', defense: 84, skills: { critical_eye: 2, agitator: 1 }, slots: [2] },
+    { id: 'chatacabra_braces', name: '恰恰布拉護腕', defense: 72, skills: { divine_blessing: 2, speed_eating: 1 }, slots: [1, 1] }
+  ],
+  waist: [
+    { id: 'rathalos_coil', name: '火龍腰帶', defense: 82, skills: { weakness_exploit: 2, attack_boost: 1 }, slots: [1, 1] },
+    { id: 'doshaguma_coil', name: '土砂龍腰帶', defense: 76, skills: { constitution: 1, evade_extender: 2 }, slots: [2] },
+    { id: 'rey_dau_coil', name: '雷狼龍腰帶', defense: 84, skills: { critical_eye: 2 }, slots: [2, 2] },
+    { id: 'chatacabra_coil', name: '恰恰布拉腰帶', defense: 72, skills: { divine_blessing: 1, evade_window: 1 }, slots: [1, 1, 1] }
+  ],
+  legs: [
+    { id: 'rathalos_greaves', name: '火龍護腿', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [1] },
+    { id: 'doshaguma_greaves', name: '土砂龍護腿', defense: 76, skills: { constitution: 2, speed_sharpening: 1 }, slots: [1, 1] },
+    { id: 'rey_dau_greaves', name: '雷狼龍護腿', defense: 84, skills: { critical_eye: 2, agitator: 2 }, slots: [2] },
+    { id: 'chatacabra_greaves', name: '恰恰布拉護腿', defense: 72, skills: { divine_blessing: 2, evade_window: 1 }, slots: [2, 1] }
+  ]
+};
+
+const BuildOptimizer = () => {
+  const [selectedSkills, setSelectedSkills] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showResults, setShowResults] = useState(false);
+
+  // 計算所有可能的配裝組合
+  const calculateBuilds = () => {
+    const allCombinations = [];
+    
+    // 生成所有組合
+    ARMOR_DATA.head.forEach(head => {
+      ARMOR_DATA.chest.forEach(chest => {
+        ARMOR_DATA.arms.forEach(arms => {
+          ARMOR_DATA.waist.forEach(waist => {
+            ARMOR_DATA.legs.forEach(legs => {
+              const build = { head, chest, arms, waist, legs };
+              const skills = calculateBuildSkills(build);
+              const score = scoreBuild(skills);
+              allCombinations.push({ ...build, skills, score });
+            });
+          });
+        });
+      });
+    });
+
+    // 排序並返回前10個
+    return allCombinations.sort((a, b) => b.score - a.score).slice(0, 10);
+  };
+
+  // 計算配裝的技能總和
+  const calculateBuildSkills = (build) => {
+    const totalSkills = {};
+    ['head', 'chest', 'arms', 'waist', 'legs'].forEach(part => {
+      const armor = build[part];
+      Object.entries(armor.skills).forEach(([skill, level]) => {
+        totalSkills[skill] = (totalSkills[skill] || 0) + level;
+      });
+    });
+    return totalSkills;
+  };
+
+  // 評分系統
+  const scoreBuild = (buildSkills) => {
+    let score = 0;
+    Object.entries(selectedSkills).forEach(([skillId, desiredLevel]) => {
+      const actualLevel = buildSkills[skillId] || 0;
+      if (actualLevel >= desiredLevel) {
+        score += desiredLevel * 10; // 完全滿足
+      } else {
+        score += actualLevel * 5; // 部分滿足
+      }
+    });
+    return score;
+  };
+
+  const topBuilds = useMemo(() => {
+    if (Object.keys(selectedSkills).length === 0) return [];
+    return calculateBuilds();
+  }, [selectedSkills]);
+
+  const filteredSkills = SKILLS.filter(skill =>
+    skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const toggleSkillLevel = (skillId, level) => {
+    setSelectedSkills(prev => {
+      const newSkills = { ...prev };
+      if (newSkills[skillId] === level) {
+        delete newSkills[skillId];
+      } else {
+        newSkills[skillId] = level;
+      }
+      return newSkills;
+    });
+    setShowResults(false);
+  };
+
+  const removeSkill = (skillId) => {
+    setSelectedSkills(prev => {
+      const newSkills = { ...prev };
+      delete newSkills[skillId];
+      return newSkills;
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold mb-2 text-center bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+          魔物獵人荒野配裝器
+        </h1>
+        <p className="text-center text-slate-400 mb-8">選擇想要的技能，系統會自動推薦最佳配裝組合</p>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* 左側：技能選擇 */}
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-orange-400">①</span> 選擇技能
+            </h2>
+            
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+              <input
+                type="text"
+                placeholder="搜尋技能..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg focus:outline-none focus:border-orange-400"
+              />
+            </div>
+
+            {/* 已選技能 */}
+            {Object.keys(selectedSkills).length > 0 && (
+              <div className="mb-4 p-4 bg-slate-900/50 rounded-lg border border-orange-500/30">
+                <div className="text-sm text-slate-400 mb-2">已選技能：</div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(selectedSkills).map(([skillId, level]) => {
+                    const skill = SKILLS.find(s => s.id === skillId);
+                    return (
+                      <div key={skillId} className="flex items-center gap-1 bg-orange-500/20 px-3 py-1 rounded-full">
+                        <span className="text-sm">{skill.name} Lv{level}</span>
+                        <button onClick={() => removeSkill(skillId)} className="hover:text-red-400">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredSkills.map(skill => (
+                <div key={skill.id} className="bg-slate-900/30 p-4 rounded-lg border border-slate-700 hover:border-slate-600 transition">
+                  <div className="font-semibold mb-1">{skill.name}</div>
+                  <div className="text-sm text-slate-400 mb-3">{skill.description}</div>
+                  <div className="flex gap-2">
+                    {[...Array(skill.maxLevel)].map((_, i) => {
+                      const level = i + 1;
+                      const isSelected = selectedSkills[skill.id] === level;
+                      return (
+                        <button
+                          key={level}
+                          onClick={() => toggleSkillLevel(skill.id, level)}
+                          className={`px-3 py-1 rounded transition ${
+                            isSelected
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-slate-700 hover:bg-slate-600'
+                          }`}
+                        >
+                          Lv{level}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 右側：配裝結果 */}
+          <div className="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-orange-400">②</span> 推薦配裝
+            </h2>
+
+            {Object.keys(selectedSkills).length === 0 ? (
+              <div className="text-center py-20 text-slate-400">
+                <p className="text-lg">請先選擇想要的技能</p>
+                <p className="text-sm mt-2">系統會自動計算最佳配裝組合</p>
+              </div>
+            ) : !showResults ? (
+              <div className="text-center py-20">
+                <button
+                  onClick={() => setShowResults(true)}
+                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg font-bold hover:from-orange-600 hover:to-red-600 transition shadow-lg"
+                >
+                  開始計算配裝
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                {topBuilds.map((build, idx) => (
+                  <div key={idx} className="bg-slate-900/50 p-4 rounded-lg border border-slate-600">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-bold text-lg">配裝方案 #{idx + 1}</span>
+                      <span className="text-sm bg-orange-500/20 px-3 py-1 rounded-full">
+                        評分: {build.score}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 mb-3">
+                      {['head', 'chest', 'arms', 'waist', 'legs'].map(part => (
+                        <div key={part} className="text-sm flex items-center gap-2">
+                          <span className="text-slate-400 w-16">
+                            {part === 'head' ? '頭部' : part === 'chest' ? '胸部' : part === 'arms' ? '手部' : part === 'waist' ? '腰部' : '腳部'}:
+                          </span>
+                          <span className="font-medium">{build[part].name}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-slate-700 pt-3">
+                      <div className="text-sm text-slate-400 mb-2">總技能:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(build.skills).map(([skillId, level]) => {
+                          const skill = SKILLS.find(s => s.id === skillId);
+                          const isRequired = selectedSkills[skillId];
+                          const isFulfilled = isRequired && level >= selectedSkills[skillId];
+                          return (
+                            <div
+                              key={skillId}
+                              className={`text-xs px-2 py-1 rounded ${
+                                isFulfilled
+                                  ? 'bg-green-500/20 text-green-300'
+                                  : isRequired
+                                  ? 'bg-yellow-500/20 text-yellow-300'
+                                  : 'bg-slate-700 text-slate-300'
+                              }`}
+                            >
+                              {skill?.name} Lv{level}
+                              {isFulfilled && <Check size={12} className="inline ml-1" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 text-center text-sm text-slate-500">
+          <p>示範版本 - 使用部分資料 | 實際遊戲請參考官方資料</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BuildOptimizer;
