@@ -1,0 +1,134 @@
+{
+  "low_rank": {
+    "head": [],
+    "chest": [],
+    "arms": [],
+    "waist": [],
+    "legs": []
+  },
+  "high_rank": {
+    "head": [
+      {
+        "id": "rathalos_helm_hr",
+        "name": "火龍頭盔",
+        "name_en": "Rathalos Helm",
+        "monster": "火龍",
+        "rank": "上位",
+        "defense": 82,
+        "defense_max": 164,
+        "slots": [2, 1],
+        "skills": {
+          "attack_boost": 2,
+          "weakness_exploit": 1
+        },
+        "resistances": {
+          "fire": 3,
+          "water": -3,
+          "thunder": -1,
+          "ice": -2,
+          "dragon": 1
+        }
+      }
+    ],
+    "chest": [
+      {
+        "id": "rathalos_mail_hr",
+        "name": "火龍鎧甲",
+        "name_en": "Rathalos Mail",
+        "monster": "火龍",
+        "rank": "上位",
+        "defense": 82,
+        "defense_max": 164,
+        "slots": [2],
+        "skills": {
+          "attack_boost": 2,
+          "weakness_exploit": 1
+        },
+        "resistances": {
+          "fire": 3,
+          "water": -3,
+          "thunder": -1,
+          "ice": -2,
+          "dragon": 1
+        }
+      }
+    ],
+    "arms": [
+      {
+        "id": "rathalos_braces_hr",
+        "name": "火龍護腕",
+        "name_en": "Rathalos Braces",
+        "monster": "火龍",
+        "rank": "上位",
+        "defense": 82,
+        "defense_max": 164,
+        "slots": [2, 1, 1],
+        "skills": {
+          "attack_boost": 2
+        },
+        "resistances": {
+          "fire": 3,
+          "water": -3,
+          "thunder": -1,
+          "ice": -2,
+          "dragon": 1
+        }
+      }
+    ],
+    "waist": [
+      {
+        "id": "rathalos_coil_hr",
+        "name": "火龍腰帶",
+        "name_en": "Rathalos Coil",
+        "monster": "火龍",
+        "rank": "上位",
+        "defense": 82,
+        "defense_max": 164,
+        "slots": [1, 1],
+        "skills": {
+          "weakness_exploit": 2,
+          "attack_boost": 1
+        },
+        "resistances": {
+          "fire": 3,
+          "water": -3,
+          "thunder": -1,
+          "ice": -2,
+          "dragon": 1
+        }
+      }
+    ],
+    "legs": [
+      {
+        "id": "rathalos_greaves_hr",
+        "name": "火龍護腿",
+        "name_en": "Rathalos Greaves",
+        "monster": "火龍",
+        "rank": "上位",
+        "defense": 82,
+        "defense_max": 164,
+        "slots": [1],
+        "skills": {
+          "attack_boost": 2,
+          "weakness_exploit": 1
+        },
+        "resistances": {
+          "fire": 3,
+          "water": -3,
+          "thunder": -1,
+          "ice": -2,
+          "dragon": 1
+        }
+      }
+    ]
+  }
+}
+```
+
+完成！現在你應該看到：
+```
+mh-wilds-builder/
+├── data/
+│   ├── skills.json
+│   └── armors.json
+└── index.html
