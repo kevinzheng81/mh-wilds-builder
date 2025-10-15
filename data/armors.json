@@ -123,12 +123,3 @@
     ]
   }
 }
-```
-
-完成！現在你應該看到：
-```
-mh-wilds-builder/
-├── data/
-│   ├── skills.json
-│   └── armors.json
-└── index.html
