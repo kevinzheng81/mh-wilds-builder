@@ -16,9 +16,9 @@
         .skill-card:hover {
             transform: translateY(-2px);
         }
-        /* 確保在 Tailwind 載入前也有基本樣式 */
         .loading {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -27,83 +27,128 @@
     </style>
 </head>
 <body class="text-white p-4 md:p-6">
-    <div id="app" class="loading">載入中...</div>
+    <div id="app" class="loading">
+        <div class="text-2xl mb-4">載入遊戲資料中...</div>
+        <div class="text-sm text-slate-400">Loading game data...</div>
+    </div>
 
     <script>
-        // 遊戲資料
-        const SKILLS = [
-            { id: 'weakness_exploit', name: '弱點特效', maxLevel: 5, description: '攻擊弱點時提升會心率' },
-            { id: 'attack_boost', name: '攻擊', maxLevel: 7, description: '提升攻擊力' },
-            { id: 'critical_eye', name: '看破', maxLevel: 7, description: '提升會心率' },
-            { id: 'agitator', name: '挑戰者', maxLevel: 5, description: '怪物憤怒時提升攻擊和會心' },
-            { id: 'divine_blessing', name: '精靈加護', maxLevel: 5, description: '機率減少受到的傷害' },
-            { id: 'evade_window', name: '迴避性能', maxLevel: 5, description: '延長迴避無敵時間' },
-            { id: 'evade_extender', name: '迴避距離', maxLevel: 3, description: '增加迴避距離' },
-            { id: 'speed_eating', name: '快吃', maxLevel: 3, description: '加快道具使用速度' },
-            { id: 'constitution', name: '體術', maxLevel: 3, description: '減少持續消耗的耐力' },
-            { id: 'speed_sharpening', name: '砥石使用高速化', maxLevel: 3, description: '加快磨刀速度' },
-            { id: 'stun_resistance', name: '耐暈', maxLevel: 3, description: '減少暈眩時間' },
-            { id: 'health_boost', name: '體力增強', maxLevel: 3, description: '提升最大體力' }
-        ];
-
-        const ARMOR_DATA = {
-            head: [
-                { id: 'rathalos_helm', name: '火龍頭盔', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2, 1] },
-                { id: 'doshaguma_helm', name: '土砂龍頭盔', defense: 76, skills: { constitution: 2, evade_extender: 1 }, slots: [1, 1] },
-                { id: 'rey_dau_helm', name: '雷狼龍頭盔', defense: 84, skills: { critical_eye: 2, speed_eating: 1 }, slots: [2] },
-                { id: 'chatacabra_helm', name: '恰恰布拉頭盔', defense: 72, skills: { divine_blessing: 2 }, slots: [1, 1, 1] },
-                { id: 'balahara_helm', name: '巴拉哈拉頭盔', defense: 78, skills: { health_boost: 2, stun_resistance: 1 }, slots: [2, 1] }
-            ],
-            chest: [
-                { id: 'rathalos_mail', name: '火龍鎧甲', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [2] },
-                { id: 'doshaguma_mail', name: '土砂龍鎧甲', defense: 76, skills: { constitution: 2, agitator: 1 }, slots: [1, 1] },
-                { id: 'rey_dau_mail', name: '雷狼龍鎧甲', defense: 84, skills: { critical_eye: 3 }, slots: [2, 1] },
-                { id: 'chatacabra_mail', name: '恰恰布拉鎧甲', defense: 72, skills: { divine_blessing: 1, evade_window: 2 }, slots: [1] },
-                { id: 'balahara_mail', name: '巴拉哈拉鎧甲', defense: 78, skills: { health_boost: 1, stun_resistance: 2 }, slots: [2] }
-            ],
-            arms: [
-                { id: 'rathalos_braces', name: '火龍護腕', defense: 82, skills: { attack_boost: 2 }, slots: [2, 1, 1] },
-                { id: 'doshaguma_braces', name: '土砂龍護腕', defense: 76, skills: { constitution: 1, speed_sharpening: 2 }, slots: [1] },
-                { id: 'rey_dau_braces', name: '雷狼龍護腕', defense: 84, skills: { critical_eye: 2, agitator: 1 }, slots: [2] },
-                { id: 'chatacabra_braces', name: '恰恰布拉護腕', defense: 72, skills: { divine_blessing: 2, speed_eating: 1 }, slots: [1, 1] },
-                { id: 'balahara_braces', name: '巴拉哈拉護腕', defense: 78, skills: { health_boost: 2 }, slots: [2, 2] }
-            ],
-            waist: [
-                { id: 'rathalos_coil', name: '火龍腰帶', defense: 82, skills: { weakness_exploit: 2, attack_boost: 1 }, slots: [1, 1] },
-                { id: 'doshaguma_coil', name: '土砂龍腰帶', defense: 76, skills: { constitution: 1, evade_extender: 2 }, slots: [2] },
-                { id: 'rey_dau_coil', name: '雷狼龍腰帶', defense: 84, skills: { critical_eye: 2 }, slots: [2, 2] },
-                { id: 'chatacabra_coil', name: '恰恰布拉腰帶', defense: 72, skills: { divine_blessing: 1, evade_window: 1 }, slots: [1, 1, 1] },
-                { id: 'balahara_coil', name: '巴拉哈拉腰帶', defense: 78, skills: { health_boost: 1, stun_resistance: 1 }, slots: [2, 1] }
-            ],
-            legs: [
-                { id: 'rathalos_greaves', name: '火龍護腿', defense: 82, skills: { attack_boost: 2, weakness_exploit: 1 }, slots: [1] },
-                { id: 'doshaguma_greaves', name: '土砂龍護腿', defense: 76, skills: { constitution: 2, speed_sharpening: 1 }, slots: [1, 1] },
-                { id: 'rey_dau_greaves', name: '雷狼龍護腿', defense: 84, skills: { critical_eye: 2, agitator: 2 }, slots: [2] },
-                { id: 'chatacabra_greaves', name: '恰恰布拉護腿', defense: 72, skills: { divine_blessing: 2, evade_window: 1 }, slots: [2, 1] },
-                { id: 'balahara_greaves', name: '巴拉哈拉護腿', defense: 78, skills: { health_boost: 2, stun_resistance: 1 }, slots: [1, 1] }
-            ]
-        };
-
+        // 全域資料變數
+        let SKILLS = [];
+        let ARMOR_DATA = { low_rank: {}, high_rank: {} };
+        let DECORATIONS = [];
+        
         // 狀態管理
         let selectedSkills = {};
         let searchTerm = '';
+        let currentRank = 'high_rank'; // 預設使用上位防具
 
-        // 初始化整個應用程式
+        // 載入所有資料
+        async function loadGameData() {
+            try {
+                // 載入技能資料
+                const skillsResponse = await fetch('data/skills.json');
+                if (skillsResponse.ok) {
+                    const skillsData = await skillsResponse.json();
+                    SKILLS = [...(skillsData.armor_skills || []), ...(skillsData.weapon_skills || [])];
+                    console.log(`✓ 已載入 ${SKILLS.length} 個技能`);
+                } else {
+                    throw new Error('無法載入技能資料');
+                }
+
+                // 載入防具資料
+                const armorsResponse = await fetch('data/armors.json');
+                if (armorsResponse.ok) {
+                    ARMOR_DATA = await armorsResponse.json();
+                    console.log(`✓ 已載入防具資料`);
+                } else {
+                    throw new Error('無法載入防具資料');
+                }
+
+                // 載入裝飾珠資料（可選）
+                try {
+                    const decorationsResponse = await fetch('data/decorations.json');
+                    if (decorationsResponse.ok) {
+                        const decorationsData = await decorationsResponse.json();
+                        DECORATIONS = decorationsData.decorations || [];
+                        console.log(`✓ 已載入 ${DECORATIONS.length} 個裝飾珠`);
+                    }
+                } catch (e) {
+                    console.log('未找到裝飾珠資料，跳過');
+                }
+
+                // 資料載入完成，初始化應用
+                initApp();
+            } catch (error) {
+                console.error('資料載入錯誤:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="max-w-2xl mx-auto text-center">
+                        <h1 class="text-3xl font-bold text-red-400 mb-4">資料載入失敗</h1>
+                        <p class="text-slate-300 mb-4">請確認以下事項：</p>
+                        <ul class="text-left text-slate-400 space-y-2 mb-6">
+                            <li>✓ 資料檔案是否存在於 <code class="bg-slate-700 px-2 py-1 rounded">data/</code> 目錄中</li>
+                            <li>✓ 檔案名稱是否正確：skills.json, armors.json</li>
+                            <li>✓ JSON 格式是否正確（可用 jsonlint.com 驗證）</li>
+                            <li>✓ 如果在本地測試，需使用本地伺服器（不能直接開啟 HTML）</li>
+                        </ul>
+                        <div class="bg-slate-800 p-4 rounded text-left">
+                            <div class="text-sm text-slate-500 mb-2">錯誤訊息：</div>
+                            <code class="text-red-300">${error.message}</code>
+                        </div>
+                        <div class="mt-6">
+                            <button onclick="location.reload()" class="px-6 py-2 bg-orange-500 rounded hover:bg-orange-600">
+                                重新載入
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 初始化應用程式
         function initApp() {
             const appContainer = document.getElementById('app');
+            appContainer.className = '';
             appContainer.innerHTML = `
                 <div class="max-w-7xl mx-auto">
                     <h1 class="text-3xl md:text-4xl font-bold mb-2 text-center bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
                         魔物獵人荒野配裝器
                     </h1>
-                    <p class="text-center text-slate-400 mb-8">選擇想要的技能，系統會自動推薦最佳配裝組合</p>
+                    <p class="text-center text-slate-400 mb-4">選擇想要的技能，系統會自動推薦最佳配裝組合</p>
+                    
+                    <!-- 資料統計 -->
+                    <div class="text-center text-sm text-slate-500 mb-6">
+                        共 ${SKILLS.length} 個技能 | 
+                        上位防具 ${countArmors('high_rank')} 件 | 
+                        下位防具 ${countArmors('low_rank')} 件
+                        ${DECORATIONS.length > 0 ? ` | ${DECORATIONS.length} 個裝飾珠` : ''}
+                    </div>
 
                     <div class="grid lg:grid-cols-2 gap-6">
                         <!-- 左側：技能選擇 -->
                         <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700">
-                            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <span class="text-orange-400">①</span> 選擇技能
-                            </h2>
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-2xl font-bold flex items-center gap-2">
+                                    <span class="text-orange-400">①</span> 選擇技能
+                                </h2>
+                                <!-- 切換防具階級 -->
+                                <div class="flex gap-2">
+                                    <button 
+                                        id="btnLowRank"
+                                        onclick="switchRank('low_rank')"
+                                        class="px-3 py-1 text-sm rounded transition bg-slate-700 hover:bg-slate-600"
+                                    >
+                                        下位
+                                    </button>
+                                    <button 
+                                        id="btnHighRank"
+                                        onclick="switchRank('high_rank')"
+                                        class="px-3 py-1 text-sm rounded transition bg-orange-500 text-white"
+                                    >
+                                        上位
+                                    </button>
+                                </div>
+                            </div>
                             
                             <input
                                 type="text"
@@ -132,7 +177,7 @@
                     </div>
 
                     <div class="mt-6 text-center text-sm text-slate-500">
-                        <p>示範版本 - 使用部分資料 | 實際遊戲請參考官方資料</p>
+                        <p>資料來源：遊戲內資料整理 | 最後更新：${new Date().toLocaleDateString('zh-TW')}</p>
                     </div>
                 </div>
             `;
@@ -148,6 +193,36 @@
             showInitialMessage();
         }
 
+        // 計算防具數量
+        function countArmors(rank) {
+            if (!ARMOR_DATA[rank]) return 0;
+            const parts = ['head', 'chest', 'arms', 'waist', 'legs'];
+            return parts.reduce((sum, part) => {
+                return sum + (ARMOR_DATA[rank][part]?.length || 0);
+            }, 0);
+        }
+
+        // 切換防具階級
+        function switchRank(rank) {
+            currentRank = rank;
+            
+            // 更新按鈕樣式
+            document.getElementById('btnLowRank').className = 
+                rank === 'low_rank' 
+                ? 'px-3 py-1 text-sm rounded transition bg-orange-500 text-white'
+                : 'px-3 py-1 text-sm rounded transition bg-slate-700 hover:bg-slate-600';
+            
+            document.getElementById('btnHighRank').className = 
+                rank === 'high_rank'
+                ? 'px-3 py-1 text-sm rounded transition bg-orange-500 text-white'
+                : 'px-3 py-1 text-sm rounded transition bg-slate-700 hover:bg-slate-600';
+            
+            // 重新計算配裝
+            if (Object.keys(selectedSkills).length > 0) {
+                showCalculateButton();
+            }
+        }
+
         // 渲染技能列表
         function renderSkills() {
             const filteredSkills = SKILLS.filter(skill =>
@@ -158,10 +233,13 @@
             const skillsList = document.getElementById('skillsList');
             skillsList.innerHTML = filteredSkills.map(skill => `
                 <div class="skill-card bg-slate-900/30 p-4 rounded-lg border border-slate-700 hover:border-slate-600">
-                    <div class="font-semibold mb-1">${skill.name}</div>
+                    <div class="flex justify-between items-start mb-1">
+                        <div class="font-semibold">${skill.name}</div>
+                        ${skill.name_en ? `<div class="text-xs text-slate-500">${skill.name_en}</div>` : ''}
+                    </div>
                     <div class="text-sm text-slate-400 mb-3">${skill.description}</div>
                     <div class="flex gap-2 flex-wrap">
-                        ${Array.from({length: skill.maxLevel}, (_, i) => {
+                        ${Array.from({length: skill.max_level}, (_, i) => {
                             const level = i + 1;
                             const isSelected = selectedSkills[skill.id] === level;
                             return `
@@ -172,6 +250,7 @@
                                             ? 'bg-orange-500 text-white font-bold'
                                             : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                                     }"
+                                    title="${skill.effects && skill.effects[level] ? skill.effects[level] : ''}"
                                 >
                                     Lv${level}
                                 </button>
@@ -271,16 +350,28 @@
         // 生成配裝
         function generateBuilds() {
             const allBuilds = [];
+            const rankData = ARMOR_DATA[currentRank];
+            
+            if (!rankData) {
+                console.error('找不到對應階級的防具資料');
+                return [];
+            }
 
-            ARMOR_DATA.head.forEach(head => {
-                ARMOR_DATA.chest.forEach(chest => {
-                    ARMOR_DATA.arms.forEach(arms => {
-                        ARMOR_DATA.waist.forEach(waist => {
-                            ARMOR_DATA.legs.forEach(legs => {
-                                const build = { head, chest, arms, waist, legs };
+            const heads = rankData.head || [];
+            const chests = rankData.chest || [];
+            const arms = rankData.arms || [];
+            const waists = rankData.waist || [];
+            const legs = rankData.legs || [];
+
+            heads.forEach(head => {
+                chests.forEach(chest => {
+                    arms.forEach(arm => {
+                        waists.forEach(waist => {
+                            legs.forEach(leg => {
+                                const build = { head, chest, arms: arm, waist, legs: leg };
                                 const skills = calculateBuildSkills(build);
                                 const score = scoreBuild(skills);
-                                const defense = head.defense + chest.defense + arms.defense + waist.defense + legs.defense;
+                                const defense = head.defense + chest.defense + arm.defense + waist.defense + leg.defense;
                                 allBuilds.push({ ...build, skills, score, defense });
                             });
                         });
@@ -296,9 +387,11 @@
             const totalSkills = {};
             ['head', 'chest', 'arms', 'waist', 'legs'].forEach(part => {
                 const armor = build[part];
-                Object.entries(armor.skills).forEach(([skill, level]) => {
-                    totalSkills[skill] = (totalSkills[skill] || 0) + level;
-                });
+                if (armor && armor.skills) {
+                    Object.entries(armor.skills).forEach(([skill, level]) => {
+                        totalSkills[skill] = (totalSkills[skill] || 0) + level;
+                    });
+                }
             });
             return totalSkills;
         }
@@ -402,12 +495,8 @@
             `;
         }
 
-        // 當頁面載入完成後啟動應用程式
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {
-            initApp();
-        }
+        // 啟動應用
+        loadGameData();
     </script>
 </body>
 </html>
